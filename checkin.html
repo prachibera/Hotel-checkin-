@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel Face-Recognition Check-In</title>
+  <!-- ========== INLINE CSS ========== -->
+  <style>
+     :root {
+      --primary: #4e8cff;
+      --primary-dark: #356be0;
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --radius: 16px;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: #333;
+      line-height: 1.6;
+      padding-bottom: 80px;
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      padding: 32px 20px 64px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    header h1 {
+      font-size: 2.2rem;
+      letter-spacing: 1px;
+    }
+    main {
+      margin: -60px auto 0;
+      max-width: 1100px;
+      padding: 0 20px;
+    }
+    section {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease;
+    }
+    section:hover {
+      transform: translateY(-2px);
+    }
+    h2 {
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+      color: var(--primary-dark);
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 600;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ccd;
+      border-radius: 8px;
+      font-size: 15px;
+      background: #f9fbfe;
+      transition: border 0.2s ease;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    button {
+      background: var(--primary);
+      border: none;
+      padding: 12px 26px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+    button.secondary {
+      background: #e6ebf5;
+      color: #333;
+    }
+    button.danger {
+      background: #e53935;
+    }
+    button.danger:hover {
+      background: #c62828;
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%);
+      background: #323232;
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 32px;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.4s ease;
+      box-shadow: var(--shadow);
+    }
+    .toast.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .grid {
+      display: grid;
+      gap: 24px;
+    }
+    @media(min-width: 900px) {
+      .grid.two { grid-template-columns: 1fr 1fr; }
+      .grid.three { grid-template-columns: repeat(3, 1fr); }
+    }
+    .visitor-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 0;
+      background: #f3f7fd;
+      border-radius: 10px;
+      padding: 8px 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+    .visitor-card img {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--primary);
+    }
+    #video {
+      width: 100%;
+      max-width: 480px;
+      border-radius: var(--radius);
+      background: #000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px 12px;
+      border: 1px solid #e0e6f1;
+      text-align: left;
+    }
+    th {
+      background: #f0f5ff;
+      color: #333;
+      font-weight: 600;
+    }
+    .success {
+      color: green;
+      font-weight: 600;
+    }
+    .denied {
+      color: #c62828;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hotel Face-Recognition Check-In</h1>
+  </header>
+  <main>
+
+    <!-- Register -->
+    <section>
+      <h2>Register / Add Photo</h2>
+      <form id="registerForm" class="grid two">
+        <div>
+          <label for="fullName">Full Name</label>
+          <input id="fullName" required type="text" placeholder="e.g., K Sinha" />
+        </div>
+        <div>
+          <label for="guestId">ID / Booking #</label>
+          <input id="guestId" required type="text" placeholder="e.g., BK-1234" />
+        </div>
+        <div>
+          <label for="imageUpload">Upload Face Photo</label>
+          <input id="imageUpload" required type="file" accept="image/*" />
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:8px;">
+          <button type="submit">Save Registration </button>
+          <button type="button" class="secondary" onclick="clearVisitors()">Delete All Visitors</button>
+        </div>
+      </form>
+      <p id="registerMsg"></p>
+    </section>
+
+    <!-- Visitors -->
+    <section>
+      <h2>Registered Visitors & Photos</h2>
+      <div id="visitorList"></div>
+    </section>
+
+    <!-- Scan + settings -->
+    <section class="grid two">
+      <div>
+        <h2>Live Scan</h2>
+        <video id="video" autoplay muted playsinline></video><br />
+        <button id="startScanBtn">Start Scan</button>
+        <button id="stopScanBtn" style="display:none;" class="secondary">Stop</button>
+        <p id="scanStatus"></p>
+      </div>
+      <div>
+        <h2>Settings</h2>
+        <label for="thresholdInput">Match Threshold (0-1, default 0.7)</label>
+        <input type="number" step="0.01" min="0" max="1" id="thresholdInput" value="0.7" />
+        <br /><br />
+        <label>Multiple-Face Policy</label>
+        <select id="multiFacePolicy">
+          <option value="deny" selected>Deny Check-in</option>
+          <option value="warn">Warn Only</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section>
+      <h2>Check-In History</h2>
+      <button class="secondary" onclick="clearHistory()">Clear History</button>
+      <button class="secondary" onclick="downloadHistory()">Download CSV</button>
+      <div style="max-height:360px;overflow:auto;margin-top:12px;">
+        <table id="historyTable">
+          <thead>
+            <tr><th>Time</th><th>Visitor</th><th>Status</th><th>Distance</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Face-API.js -->
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <script>
+    /************ Helpers & Storage ************/
+    const MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
+    const getVisitors = () => JSON.parse(localStorage.getItem("visitors") || "[]");
+    const saveVisitors = v => localStorage.setItem("visitors", JSON.stringify(v));
+    const getHistory  = () => JSON.parse(localStorage.getItem("history") || "[]");
+    const saveHistory = h => localStorage.setItem("history", JSON.stringify(h));
+    const fileToDataURL = f => new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});
+    const toastEl = document.getElementById("toast");
+    function showToast(msg){toastEl.textContent=msg;toastEl.classList.add("show");setTimeout(()=>toastEl.classList.remove("show"),3000);}    
+
+    /************ Model Load ************/
+    Promise.all([
+      faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+    ]).then(()=>showToast("Models loaded ✓"));
+
+    /************ UI Renderers ************/
+    function renderVisitorList(){
+      const wrap=document.getElementById("visitorList");wrap.innerHTML="";
+      getVisitors().forEach(v=>{
+        const container=document.createElement("div");
+        container.innerHTML=`<h4>${v.name} – ${v.id}</h4>`;
+        v.photos.forEach(p=>{
+          const card=document.createElement("div");card.className="visitor-card";
+          card.innerHTML=`<img src="${p.photo}"><span>📷</span>`;
+          container.appendChild(card);
+        });
+        wrap.appendChild(container);
+      })
+    }
+    function renderHistory(){
+      const tbody=document.querySelector("#historyTable tbody");tbody.innerHTML="";
+      getHistory().slice().reverse().forEach(h=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${h.time}</td><td>${h.name||"-"}</td><td class="${h.status.includes("Success")?"success":"denied"}">${h.status}</td><td>${h.distance!==undefined?h.distance.toFixed(3):"-"}</td>`;
+        tbody.appendChild(tr);
+      })
+    }
+
+    /************ Register / Add Photo ************/
+    document.getElementById("registerForm").addEventListener("submit",async e=>{
+      e.preventDefault();
+      const name=document.getElementById("fullName").value.trim();
+      const id=document.getElementById("guestId").value.trim();
+      const file=document.getElementById("imageUpload").files[0];
+      if(!name||!id||!file) return showToast("Fill all fields ✎");
+      showToast("Processing photo …");
+      try{
+        const dataURL=await fileToDataURL(file);
+        const img=new Image();img.src=dataURL;await img.decode();
+        const desc=await faceapi.computeFaceDescriptor(img);
+        const visitors=getVisitors();
+        let visitor=visitors.find(v=>v.id===id && v.name===name);
+        if(!visitor){visitor={name,id,photos:[]};visitors.push(visitor);}        
+        visitor.photos.push({photo:dataURL,descriptor:Array.from(desc)});
+        saveVisitors(visitors);
+        renderVisitorList();
+        showToast("Photo saved ✓");
+        e.target.reset();
+      }catch(err){console.error(err);showToast("Face not detected in the photo ✖");}
+    })
+
+    /************ Video Scan ************/
+    let stream=null;
+    const videoEl=document.getElementById("video");
+    async function startVideo(){
+      stream=await navigator.mediaDevices.getUserMedia({video:true});
+      videoEl.srcObject=stream;videoEl.play();
+      document.getElementById("startScanBtn").style.display="none";
+      document.getElementById("stopScanBtn").style.display="inline-block";
+      document.getElementById("scanStatus").textContent="Scanning …";
+    }
+    function stopVideo(){
+      if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;videoEl.srcObject=null;}
+      document.getElementById("startScanBtn").style.display="inline-block";
+      document.getElementById("stopScanBtn").style.display="none";
+    }
+
+    async function scanLoop(){
+      if(!stream || videoEl.readyState<2){return requestAnimationFrame(scanLoop);}      
+      const detections=await faceapi.detectAllFaces(videoEl).withFaceLandmarks().withFaceDescriptors();
+      if(detections.length===0){return requestAnimationFrame(scanLoop);}      
+
+      const policy=document.getElementById("multiFacePolicy").value;
+      if(detections.length>1){
+        const history=getHistory();
+        history.push({time:new Date().toLocaleString(),name:null,status:"Denied – Multiple faces",distance:-1});
+        saveHistory(history);renderHistory();
+        const msg="Multiple faces detected ("+detections.length+"). Scan denied.";
+        document.getElementById("scanStatus").textContent=msg;
+        showToast(msg);
+        if(policy==="deny"){return stopVideo();}
+      }
+
+      // proceed with first face only
+      const desc=detections[0].descriptor;
+      await evaluate(desc);
+      stopVideo();
+    }
+
+    async function evaluate(inputDesc){
+      const thr=parseFloat(document.getElementById("thresholdInput").value)||0.7;
+      let best={distance:1,visitor:null};
+      getVisitors().forEach(v=>v.photos.forEach(p=>{
+        const d=faceapi.euclideanDistance(inputDesc,new Float32Array(p.descriptor));
+        if(d<best.distance){best={distance:d,visitor:v}};
+      }))
+      const history=getHistory();
+      if(best.distance<thr){
+        document.getElementById("scanStatus").innerHTML=`Welcome <strong>${best.visitor.name}</strong> ✓`;
+        history.push({time:new Date().toLocaleString(),name:best.visitor.name,status:"Success",distance:best.distance});
+        showToast("Check-in successful ✓");
+      }else{
+        document.getElementById("scanStatus").innerHTML=`Face not recognised ✖`;
+        history.push({time:new Date().toLocaleString(),name:null,status:"Denied",distance:best.distance});
+        showToast("Check-in denied ✖");
+      }
+      saveHistory(history);renderHistory();
+    }
+
+    document.getElementById("startScanBtn").addEventListener("click",async()=>{document.getElementById("scanStatus").textContent="";await startVideo();requestAnimationFrame(scanLoop);});
+    document.getElementById("stopScanBtn").addEventListener("click",stopVideo);
+
+    /************ Utilities ************/
+    function clearVisitors(){if(confirm("Delete ALL visitors?")){localStorage.removeItem("visitors");renderVisitorList();showToast("Visitors cleared");}}
+    function clearHistory(){if(confirm("Clear check-in history?")){localStorage.removeItem("history");renderHistory();showToast("History cleared");}}
+    function downloadHistory(){const rows=[["Time","Visitor","Status","Distance"],...getHistory().map(h=>[h.time,h.name||"",h.status,h.distance])];
+      const csv=rows.map(r=>r.map(x=>`"${x}"`).join(",")).join("\n");
+      const blob=new Blob([csv],{type:"text/csv"});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");a.href=url;a.download="checkin_history.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);}
+
+    // migrate old schema
+    (function migrate(){const v=getVisitors();let ch=false;v.forEach(o=>{if(!o.photos){o.photos=[{photo:o.photo,descriptor:o.descriptor}];delete o.photo;delete o.descriptor;ch=true}});if(ch)saveVisitors(v)})();
+    renderVisitorList();renderHistory();
+  </script>
+</body>
+</html>
